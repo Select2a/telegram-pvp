@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CYBER HEIST - Telegram Game</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+        body {
+            background: #030712;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(56, 189, 248, 0.1) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(234, 179, 8, 0.08) 0%, transparent 40%);
+            color: #f8fafc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 12px;
+        }
+        .app-container {
+            width: 100%;
+            max-width: 400px;
+            background: rgba(17, 24, 39, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 28px;
+            padding: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 12px;
+        }
+        .header h1 {
+            font-size: 18px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #38bdf8, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+        .currency-badges {
+            display: flex;
+            gap: 6px;
+        }
+        .user-badge {
+            font-size: 10px;
+            background: rgba(56, 189, 248, 0.1);
+            color: #38bdf8;
+            padding: 4px 8px;
+            border-radius: 20px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+        .stars-badge {
+            font-size: 10px;
+            background: rgba(234, 179, 8, 0.15);
+            color: #facc15;
+            padding: 4px 8px;
+            border-radius: 20px;
+            border: 1px solid rgba(234, 179, 8, 0.4);
+            font-weight: 700;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 14px;
+        }
+        .stat-card {
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 12px;
+            border-radius: 18px;
+            text-align: left;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+        .stat-label {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #94a3b8;
+            margin-bottom: 4px;
+        }
+        .stat-value {
+            font-size: 18px;
+            font-weight: 800;
+            color: #38bdf8;
+            text-shadow: 0 0 10px rgba(56, 189, 248, 0.3);
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #94a3b8;
+            background: rgba(30, 41, 59, 0.4);
+            padding: 10px 14px;
+            border-radius: 14px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+        }
+        .info-row b {
+            color: #f8fafc;
+        }
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.25s ease;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .btn {
+            background: linear-gradient(135deg, #2563eb, #4f46e5);
+            color: white;
+            border: none;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 800;
+            border-radius: 18px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.5);
+            transition: transform 0.1s, box-shadow 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+        .nav-tabs {
+            display: flex;
+            background: rgba(15, 23, 42, 0.8);
+            border-radius: 16px;
+            padding: 4px;
+            margin-top: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .nav-tab {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #64748b;
+            padding: 10px 2px;
+            font-size: 9px;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .nav-tab.active {
+            background: #334155;
+            color: #f8fafc;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        .shop-list, .rank-list, .pvp-list, .admin-player-list {
+            text-align: left;
+            max-height: 230px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+        .shop-item, .rank-item, .pvp-item, .admin-player-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 10px 12px;
+            border-radius: 14px;
+            margin-bottom: 8px;
+            font-size: 12px;
+        }
+        .admin-player-card {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 4px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(56, 189, 248, 0.15);
+        }
+        .shop-btn, .pvp-btn {
+            background: #059669;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+        }
+        .stars-btn {
+            background: linear-gradient(135deg, #ca8a04, #eab308);
+            color: #111827;
+            border: none;
+            padding: 6px 12px;
+            font-size: 11px;
+            font-weight: 800;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(234, 179, 8, 0.3);
+        }
+        .admin-btn {
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            font-size: 11px;
+            font-weight: 800;
+            border-radius: 10px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4);
+            width: 100%;
+            margin-top: 6px;
+        }
+        .shop-btn:disabled, .stars-btn:disabled, .pvp-btn:disabled {
+            background: #1e293b;
+            color: #475569;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+        .rank-item {
+            font-weight: 600;
+        }
+        .rank-pos {
+            color: #38bdf8;
+            width: 24px;
+        }
+        .rank-name {
+            flex: 1;
+            padding-left: 8px;
+        }
+        .rank-score {
+            color: #4ade80;
+        }
+        #minigame-box {
+            display: none;
+            margin-top: 10px;
+            background: rgba(30, 41, 59, 0.9);
+            padding: 16px;
+            border-radius: 18px;
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            animation: fadeIn 0.3s ease;
+        }
+        .slider-track {
+            position: relative;
+            height: 30px;
+            background: #030712;
+            border-radius: 15px;
+            margin: 16px 0;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .target-zone {
+            position: absolute;
+            height: 100%;
+            background: rgba(34, 197, 94, 0.25);
+            border-left: 2px solid #22c55e;
+            border-right: 2px solid #22c55e;
+            transition: width 0.3s, left 0.3s;
+        }
+        .slider-pointer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            background: #38bdf8;
+            border-radius: 3px;
+            box-shadow: 0 0 12px #38bdf8;
+        }
+        .btn-success {
+            background: linear-gradient(135deg, #16a34a, #15803d);
+            box-shadow: 0 10px 25px -5px rgba(22, 163, 74, 0.5);
+        }
+        .result-message {
+            margin-top: 12px;
+            font-size: 14px;
+            font-weight: 800;
+            min-height: 22px;
+        }
+        .locked-info {
+            padding: 20px;
+            color: #94a3b8;
+            font-size: 13px;
+            line-height: 1.5;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="header">
+            <h1 onclick="triggerAdminModal()">⚡ Cyber Heist</h1>
+            <div class="currency-badges">
+                <div class="user-badge" id="thief-badge">Poz. 1</div>
+                <div class="stars-badge">⭐ <span id="stars-count">50</span></div>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-label">Twój Sejf</div>
+                <div class="stat-value"><span id="money">350</span> $</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Próby</div>
+                <div class="stat-value"><span id="energy">5</span>/5</div>
+            </div>
+        </div>
+
+        <div class="info-row">
+            <span>Pasyw: <b id="passive-display">15</b>$/min</span>
+            <span>Mnożnik: <b id="mult-display">1.0</b>x</span>
+        </div>
+
+        <!-- ZAKŁADKA 1: AKCJA -->
+        <div id="tab-game" class="tab-content active">
+            <button id="hack-btn" class="btn" onclick="startHack()">ROZPOCZNIJ WŁAMANIE</button>
+
+            <div id="minigame-box">
+                <p style="font-size: 12px; color: #94a3b8; margin-bottom: 4px;">Zatrzymaj suwak w zielonej strefie!</p>
+                <div class="slider-track">
+                    <div class="target-zone" id="target-zone"></div>
+                    <div class="slider-pointer" id="pointer"></div>
+                </div>
+                <button class="btn btn-success" onclick="stopHack()">ZŁAM ZAMEK!</button>
+            </div>
+            <div class="result-message" id="result-msg"></div>
+        </div>
+
+        <!-- ZAKŁADKA 2: SKLEP ZA DOLARY -->
+        <div id="tab-shop" class="tab-content">
+            <div class="shop-list">
+                <div class="shop-item">
+                    <div><b>Ranga Złodzieja</b><br><span style="font-size:10px;">Zwiększa szansę PvP / Odblok (Poz. 50)</span></div>
+                    <button class="shop-btn" id="buy-thief" onclick="buyThiefLevel()"><span id="thief-cost">350</span>$</button>
+                </div>
+                <div class="shop-item">
+                    <div><b>Wiertło Kvantowe</b><br><span style="font-size:10px;">+15$/min pasywnie</span></div>
+                    <button class="shop-btn" id="buy-drill" onclick="buyDrill()"><span id="drill-cost">500</span>$</button>
+                </div>
+                <div class="shop-item">
+                    <div><b>Skaner Optyczny</b><br><span style="font-size:10px;">Szersza strefa i +5% szansy w PvP</span></div>
+                    <button class="shop-btn" id="buy-skill" onclick="buySkill()"><span id="skill-cost">400</span>$</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ZAKŁADKA 3: SKLEP VIP ⭐ & ZARABIANIE -->
+        <div id="tab-stars" class="tab-content">
+            <div class="shop-list">
+                <div class="shop-item" style="border: 1px solid rgba(234, 179, 8, 0.3); background: rgba(234, 179, 8, 0.05);">
+                    <div><b>📺 Oglądaj Reklamę</b><br><span style="font-size:10px; color: #facc15;">Zarób +12 ⭐ (Prowizja systemu: +3 ⭐)</span></div>
+                    <button class="stars-btn" onclick="watchAdForStars()">Oglądaj</button>
+                </div>
+                <div class="shop-item">
+                    <div><b>⚡ Pełna Energia</b><br><span style="font-size:10px;">Odnawia 5 prób</span></div>
+                    <button class="stars-btn" onclick="buyEnergyRefill()">15 ⭐</button>
+                </div>
+                <div class="shop-item">
+                    <div><b>🚀 Dopalacz VIP</b><br><span style="font-size:10px;">Na stałe x2 do pasywu i łupu</span></div>
+                    <button class="stars-btn" id="buy-vip-boost" onclick="buyVipBoost()">50 ⭐</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ZAKŁADKA 4: SYNDYKAT PvP -->
+        <div id="tab-pvp" class="tab-content">
+            <div id="pvp-locked" class="locked-info">
+                🔒 <b>Strefa Syndykatu zablokowana!</b><br>Musisz osiągnąć <b>50. Poziom Złodzieja</b>, aby wejść do gry o wysokie stawki w gwiazdkach Telegramu.
+                <br><br>
+                <button class="shop-btn" onclick="cheatLevel50()" style="font-size: 10px; padding: 4px 8px;">[TEST] Awansuj na 50 lvl</button>
+            </div>
+            
+            <div id="pvp-unlocked" style="display: none;">
+                <div style="background: rgba(234, 179, 8, 0.1); border: 1px solid rgba(234, 179, 8, 0.3); border-radius: 12px; padding: 10px; margin-bottom: 10px; font-size: 11px; text-align: left;">
+                    ⭐ <b>Krypta:</b> <span id="risk-vault">0</span> ⭐ | 🏛️ <b>System:</b> <span id="system-wallet">0</span> ⭐<br>
+                    <span style="color: #facc15;">Twoja szansa na sukces: <b id="win-chance-display">60%</b></span>
+                    <div style="margin-top: 6px; display: flex; gap: 6px;">
+                        <input type="number" id="deposit-input" placeholder="Wpisz ilość ⭐" style="width: 110px; background: #030712; border: 1px solid #475569; color: white; padding: 4px; border-radius: 6px; font-size: 11px;">
+                        <button class="stars-btn" onclick="depositRisk()" style="padding: 4px 8px;">Wpłać do Krypty</button>
+                    </div>
+                </div>
+
+                <div style="font-size: 11px; color: #94a3b8; margin-bottom: 6px; text-align: left;">Wybierz cel do zhakowania (stawki skalują się z Krypą):</div>
+                <div class="pvp-list" id="pvp-targets"></div>
+            </div>
+        </div>
+
+        <!-- ZAKŁADKA 5: PANEL ADMINA 👑 -->
+        <div id="tab-admin" class="tab-content">
+            <div id="admin-login-box" style="padding: 16px; text-align: center;">
+                <p style="font-size: 12px; color: #94a3b8; margin-bottom: 10px;">Podaj kod autoryzacji administratora:</p>
+                <input type="password" id="admin-pass-input" placeholder="Hasło administratora" style="width: 100%; background: #030712; border: 1px solid #475569; color: white; padding: 10px; border-radius: 10px; font-size: 13px; margin-bottom: 10px; text-align: center;">
+                <button class="btn" style="padding: 10px; font-size: 13px;" onclick="verifyAdminLogin()">Zaloguj jako Admin</button>
+            </div>
+            <div id="admin-panel-content" style="display: none; text-align: left;">
+                <div style="background: rgba(220, 38, 38, 0.1); border: 1px solid rgba(220, 38, 38, 0.3); border-radius: 12px; padding: 10px; margin-bottom: 10px; font-size: 11px;">
+                    👑 <b>Panel Zarządzania Admina</b><br>
+                    Tryb GodMode aktywny (0 przegranych w PvP).
+                </div>
+                
+                <div style="background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 10px; padding: 8px 10px; margin-bottom: 10px; font-size: 11px; display: flex; justify-content: space-between; align-items: center;">
+                    <div><b>Wypłacone zyski:</b></div>
+                    <div style="font-size: 13px; font-weight: 800; color: #4ade80;"><span id="total-withdrawn">0</span> ⭐</div>
+                </div>
+
+                <div style="display: flex; gap: 6px; margin-bottom: 10px;">
+                    <button class="admin-btn" onclick="adminWithdrawSystemWallet()" style="margin-top:0; flex:1; font-size: 10px;">Wypłać System</button>
+                </div>
+
+                <!-- SEKCJA RĘCZNEGO DODAWANIA TESTOWYCH ⭐ -->
+                <div style="background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(234, 179, 8, 0.2); border-radius: 10px; padding: 8px 10px; margin-bottom: 10px; font-size: 11px;">
+                    <div style="margin-bottom: 4px; color: #facc15; font-weight: 700;">Dopisz testowe gwiazdki:</div>
+                    <div style="display: flex; gap: 6px;">
+                        <input type="number" id="admin-add-stars-input" placeholder="Wpisz ilość ⭐" style="flex: 1; background: #030712; border: 1px solid #475569; color: white; padding: 6px; border-radius: 8px; font-size: 11px;">
+                        <button class="stars-btn" onclick="adminAddCustomStars()" style="padding: 6px 12px;">Dodaj ⭐</button>
+                    </div>
+                </div>
+
+                <!-- SEKCJA BAZY GRACZY -->
+                <div style="font-size: 11px; font-weight: 800; color: #38bdf8; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px;">Baza graczy i statystyki:</div>
+                <div class="admin-player-list" id="admin-player-list">
+                    <!-- Generowane dynamicznie -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ZAKŁADKA 6: RANKING -->
+        <div id="tab-rank" class="tab-content">
+            <div class="rank-list" id="rank-container"></div>
+        </div>
+
+        <!-- DOLNA NAWIGACJA -->
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('game')">🎯 Skok</button>
+            <button class="nav-tab" onclick="switchTab('shop')">🛒 Sklep</button>
+            <button class="nav-tab" onclick="switchTab('stars')">⭐ VIP</button>
+            <button class="nav-tab" onclick="switchTab('pvp')">🏴‍☠️ Syndykat</button>
+            <button class="nav-tab" onclick="switchTab('admin')">👑 Admin</button>
+            <button class="nav-tab" onclick="switchTab('rank')">🏆 Ranking</button>
+        </div>
+    </div>
+
+    <script>
+        let money = 350;
+        let energy = 5;
+        const maxEnergy = 5;
+        let stars = 50; 
+        let riskVault = 0; 
+        let systemWallet = 0; 
+        let totalWithdrawn = 0; 
+        let totalDeposited = 0;
+        let pvpWins = 18;
+        let pvpLosses = 4;
+        let totalWithdrawnFromGame = 0;
+        let isAdmin = false;
+        
+        let thiefLevel = 1;
+        let thiefCost = 350;
+        
+        let passiveRate = 15;
+        let drillCost = 500;
+        
+        let skillLevel = 1;
+        let skillCost = 400;
+        let zoneWidth = 16;
+        let vipMultiplier = 1;
+
+        let pointerPos = 0;
+        let direction = 1.8;
+        let gameInterval = null;
+        let isPlaying = false;
+
+        let playersDatabase = [
+            { id: 1, name: "Ty (Haker #7742)", stars: stars, wins: pvpWins, losses: pvpLosses, deposited: totalDeposited, withdrawn: totalWithdrawnFromGame, score: money, isPlayer: true },
+            { id: 2, name: "CyberKing_99", stars: 1420, wins: 54, losses: 19, deposited: 900, withdrawn: 600, score: 45200, isPlayer: false },
+            { id: 3, name: "NeoHacker", stars: 620, wins: 31, losses: 12, deposited: 400, withdrawn: 250, score: 38100, isPlayer: false },
+            { id: 4, name: "Glitch_Fox", stars: 310, wins: 19, losses: 8, deposited: 200, withdrawn: 100, score: 29400, isPlayer: false },
+            { id: 5, name: "ShadowByte", stars: 150, wins: 9, losses: 5, deposited: 120, withdrawn: 40, score: 18500, isPlayer: false },
+            { id: 6, name: "ZeroCool", stars: 80, wins: 4, losses: 3, deposited: 50, withdrawn: 10, score: 9200, isPlayer: false }
+        ];
+
+        updateTargetZoneUI();
+        renderRanking();
+        renderPvPTargets();
+        updateWinChanceDisplay();
+        renderAdminPlayersList();
+
+        setInterval(() => {
+            money += (passiveRate * vipMultiplier) / 60;
+            document.getElementById('money').innerText = Math.floor(money);
+            checkShopButtons();
+            syncPlayerStats();
+        }, 1000);
+
+        function syncPlayerStats() {
+            let player = playersDatabase.find(p => p.isPlayer);
+            if (player) {
+                player.stars = stars;
+                player.wins = pvpWins;
+                player.losses = pvpLosses;
+                player.deposited = totalDeposited;
+                player.withdrawn = totalWithdrawnFromGame;
+                
+                let highestBotScore = Math.max(...playersDatabase.filter(p => !p.isPlayer).map(p => p.score));
+                if (money <= highestBotScore) {
+                    player.score = highestBotScore + 150; 
+                } else {
+                    player.score = Math.floor(money);
+                }
+            }
+            renderRanking();
+            if(isAdmin) renderAdminPlayersList();
+        }
+
+        function triggerAdminModal() {}
+
+        function verifyAdminLogin() {
+            let pass = document.getElementById('admin-pass-input').value;
+            if (pass === "admin777" || pass === "godmode") {
+                isAdmin = true;
+                document.getElementById('admin-login-box').style.display = 'none';
+                document.getElementById('admin-panel-content').style.display = 'block';
+                cheatLevel50();
+                renderAdminPlayersList();
+                alert("Zalogowano pomyślnie jako Administrator!");
+            } else {
+                alert("Nieprawidłowe hasło administratora!");
+            }
+        }
+
+        function adminWithdrawSystemWallet() {
+            if (!isAdmin) return;
+            if (systemWallet <= 0) {
+                alert("Portfel systemowy jest pusty!");
+                return;
+            }
+            let payout = systemWallet;
+            stars += payout;
+            totalWithdrawn += payout; 
+            systemWallet = 0;
+            
+            document.getElementById('stars-count').innerText = stars;
+            document.getElementById('system-wallet').innerText = systemWallet;
+            document.getElementById('total-withdrawn').innerText = totalWithdrawn; 
+            syncPlayerStats();
+            alert(`Wypłacono pomyślnie ${payout} ⭐ z prowizji platformy do Twojego portfela!`);
+        }
+
+        function adminAddCustomStars() {
+            if (!isAdmin) return;
+            let amount = parseInt(document.getElementById('admin-add-stars-input').value);
+            if (isNaN(amount) || amount <= 0) {
+                alert("Wpisz prawidłową ilość gwiazdek do dodania!");
+                return;
+            }
+            stars += amount;
+            document.getElementById('stars-count').innerText = stars;
+            document.getElementById('admin-add-stars-input').value = '';
+            syncPlayerStats();
+            alert(`Dodano pomyślnie ${amount} ⭐ do Twojego konta!`);
+        }
+
+        function watchAdForStars() {
+            let btn = event.target;
+            let originalText = btn.innerText;
+            btn.disabled = true;
+            btn.innerText = "Oglądanie...";
+
+            setTimeout(() => {
+                let playerReward = 12;
+                let platformCommission = 3;
+
+                stars += playerReward;
+                systemWallet += platformCommission;
+
+                document.getElementById('stars-count').innerText = stars;
+                document.getElementById('system-wallet').innerText = systemWallet;
+                syncPlayerStats();
+
+                btn.disabled = false;
+                btn.innerText = originalText;
+                alert(`🎉 Reklama obejrzana! Otrzymujesz +${playerReward} ⭐ (Prowizja platformy: +${platformCommission} ⭐).`);
+            }, 2500);
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(el => el.classList.remove('active'));
+
+            if (tabName === 'game') {
+                document.getElementById('tab-game').classList.add('active');
+            } else if (tabName === 'shop') {
+                document.getElementById('tab-shop').classList.add('active');
+            } else if (tabName === 'stars') {
+                document.getElementById('tab-stars').classList.add('active');
+            } else if (tabName === 'pvp') {
+                document.getElementById('tab-pvp').classList.add('active');
+                updateWinChanceDisplay();
+                renderPvPTargets();
+            } else if (tabName === 'admin') {
+                document.getElementById('tab-admin').classList.add('active');
+                if(isAdmin) renderAdminPlayersList();
+            } else if (tabName === 'rank') {
+                document.getElementById('tab-rank').classList.add('active');
+                renderRanking();
+            }
+            event.target.classList.add('active');
+        }
+
+        function calculateWinChance() {
+            let chance = 35 + (thiefLevel * 0.5) + (skillLevel * 5);
+            return Math.min(85, Math.max(25, Math.floor(chance)));
+        }
+
+        function updateWinChanceDisplay() {
+            let chance = calculateWinChance();
+            let el = document.getElementById('win-chance-display');
+            if(el) el.innerText = chance + '%';
+        }
+
+        function updateTargetZoneUI() {
+            let zone = document.getElementById('target-zone');
+            let leftPos = 50 - (zoneWidth / 2);
+            zone.style.width = zoneWidth + '%';
+            zone.style.left = leftPos + '%';
+        }
+
+        function renderRanking() {
+            syncPlayerStats();
+            playersDatabase.sort((a, b) => b.score - a.score);
+            let container = document.getElementById('rank-container');
+            container.innerHTML = '';
+            
+            playersDatabase.forEach((p, index) => {
+                let item = document.createElement('div');
+                item.className = 'rank-item';
+                if(p.isPlayer) item.style.background = 'rgba(56, 189, 248, 0.15)';
+                item.innerHTML = `
+                    <div class="rank-pos">#${index + 1}</div>
+                    <div class="rank-name">${p.name}</div>
+                    <div class="rank-score">${p.score}$</div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function renderAdminPlayersList() {
+            syncPlayerStats();
+            playersDatabase.sort((a, b) => b.score - a.score);
+            let container = document.getElementById('admin-player-list');
+            if (!container) return;
+            container.innerHTML = '';
+
+            playersDatabase.forEach((p, index) => {
+                let card = document.createElement('div');
+                card.className = 'admin-player-card';
+                if(p.isPlayer) card.style.borderColor = 'rgba(56, 189, 248, 0.5)';
+                
+                card.innerHTML = `
+                    <div style="display: flex; width: 100%; justify-content: space-between;">
+                        <b style="color: ${p.isPlayer ? '#38bdf8' : '#f8fafc'};">#${index + 1}. ${p.name}</b>
+                        <span style="color: #facc15; font-weight: 700;">${p.stars} ⭐</span>
+                    </div>
+                    <div style="font-size: 10px; color: #94a3b8; display: flex; gap: 8px; margin-top: 2px;">
+                        <span>⚔️ Wygrane: <b style="color: #4ade80;">${p.wins}</b></span>
+                        <span>🛡️ Przegrane: <b style="color: #f87171;">${p.losses}</b></span>
+                        <span>📥 Wpłacił: <b>${p.deposited} ⭐</b></span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function cheatLevel50() {
+            thiefLevel = 50;
+            document.getElementById('thief-badge').innerText = `Poz. 50`;
+            document.getElementById('pvp-locked').style.display = 'none';
+            document.getElementById('pvp-unlocked').style.display = 'block';
+            updateWinChanceDisplay();
+        }
+
+        function depositRisk() {
+            let amount = parseInt(document.getElementById('deposit-input').value);
+            if (isNaN(amount) || amount <= 0) return;
+            if (stars >= amount || isAdmin) {
+                if (!isAdmin) stars -= amount;
+                riskVault += amount;
+                totalDeposited += amount;
+                
+                document.getElementById('stars-count').innerText = stars;
+                document.getElementById('risk-vault').innerText = riskVault;
+                document.getElementById('deposit-input').value = '';
+                renderPvPTargets();
+                syncPlayerStats();
+            } else {
+                alert("Nie masz tylu gwiazdek w bezpiecznym saldzie!");
+            }
+        }
+
+        function renderPvPTargets() {
+            let container = document.getElementById('pvp-targets');
+            container.innerHTML = '';
+            
+            let baseRisk = Math.max(30, riskVault);
+            let dynamicTargets = [
+                { id: 1, name: "Viper_X", risk: Math.floor(baseRisk * 0.4) },
+                { id: 2, name: "NullByte", risk: Math.floor(baseRisk * 0.8) },
+                { id: 3, name: "DarkNode", risk: Math.floor(baseRisk * 1.2) },
+                { id: 4, name: "RootAccess_Syndicate", risk: Math.floor(baseRisk * 1.8) }
+            ];
+            
+            dynamicTargets.forEach(target => {
+                let item = document.createElement('div');
+                item.className = 'pvp-item';
+                let canAttack = isAdmin || (riskVault >= target.risk);
+                item.innerHTML = `
+                    <div><b>${target.name}</b><br><span style="color:#facc15;">Sejf celu: ${target.risk} ⭐</span></div>
+                    <button class="pvp-btn" ${!canAttack ? 'disabled' : ''} onclick="attackTarget(${target.id}, ${target.risk})">Zahakuj</button>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        function attackTarget(id, targetRisk) {
+            if (!isAdmin && riskVault < targetRisk) {
+                alert("Musisz mieć w Krypcie Ryzyka przynajmniej tyle samo gwiazdek co cel!");
+                return;
+            }
+
+            let winChance = isAdmin ? 100 : calculateWinChance(); 
+            let success = isAdmin ? true : (Math.random() * 100 < winChance);
+
+            if (success) {
+                let netReward = Math.floor(targetRisk * 0.7);
+                let commission = targetRisk - netReward;
+                
+                stars += netReward + targetRisk; 
+                systemWallet += commission;      
+                if (!isAdmin) riskVault = Math.max(0, riskVault - targetRisk); 
+                
+                pvpWins++;
+                alert(`🔥 Sukces (${isAdmin ? 'Admin GodMode' : winChance + '%'} szans)! Przejęto krypcę. Twój zysk: +${netReward} ⭐`);
+            } else {
+                let penalty = Math.floor(targetRisk * 0.5);
+                systemWallet += penalty;
+                pvpLosses++;
+
+                alert(`❌ Porażka (${winChance}% szans)! System obronny odparł atak.`);
+            }
+
+            document.getElementById('stars-count').innerText = stars;
+            document.getElementById('risk-vault').innerText = riskVault;
+            document.getElementById('system-wallet').innerText = systemWallet;
+            renderPvPTargets();
+            syncPlayerStats();
+        }
+
+        function buyThiefLevel() {
+            if (money >= thiefCost || isAdmin) {
+                if (!isAdmin) money -= thiefCost;
+                thiefLevel++;
+                thiefCost = Math.floor(thiefCost * 2.2);
+                
+                document.getElementById('thief-badge').innerText = `Poz. ${thiefLevel}`;
+                document.getElementById('mult-display').innerText = (thiefLevel * vipMultiplier).toFixed(1);
+                document.getElementById('thief-cost').innerText = thiefCost;
+                document.getElementById('money').innerText = Math.floor(money);
+                updateWinChanceDisplay();
+                syncPlayerStats();
+
+                if (thiefLevel >= 50) {
+                    document.getElementById('pvp-locked').style.display = 'none';
+                    document.getElementById('pvp-unlocked').style.display = 'block';
+                }
+            }
+        }
+
+        function buyDrill() {
+            if (money >= drillCost || isAdmin) {
+                if (!isAdmin) money -= drillCost;
+                passiveRate += 15;
+                drillCost = Math.floor(drillCost * 1.5);
+                document.getElementById('passive-display').innerText = passiveRate;
+                document.getElementById('drill-cost').innerText = drillCost;
+                document.getElementById('money').innerText = Math.floor(money);
+                syncPlayerStats();
+            }
+        }
+
+        function buySkill() {
+            if ((money >= skillCost || isAdmin) && skillLevel < 5) {
+                if (!isAdmin) money -= skillCost;
+                skillLevel++;
+                zoneWidth += 5;
+                skillCost = Math.floor(skillCost * 1.6);
+                
+                updateTargetZoneUI();
+                updateWinChanceDisplay();
+                document.getElementById('skill-cost').innerText = skillLevel >= 5 ? 'MAX' : skillCost;
+                if(skillLevel >= 5) document.getElementById('buy-skill').disabled = true;
+                document.getElementById('money').innerText = Math.floor(money);
+                syncPlayerStats();
+            }
+        }
+
+        function buyEnergyRefill() {
+            if (stars >= 15 || isAdmin) {
+                if (!isAdmin) stars -= 15;
+                energy = maxEnergy;
+                document.getElementById('energy').innerText = energy;
+                document.getElementById('stars-count').innerText = stars;
+                syncPlayerStats();
+            } else {
+                alert("Za mało gwiazdek Telegramu! ⭐");
+            }
+        }
+
+        function buyVipBoost() {
+            if ((stars >= 50 || isAdmin) && vipMultiplier === 1) {
+                if (!isAdmin) stars -= 50;
+                vipMultiplier = 2;
+                document.getElementById('mult-display').innerText = (thiefLevel * vipMultiplier).toFixed(1);
+                document.getElementById('stars-count').innerText = stars;
+                let btn = document.getElementById('buy-vip-boost');
+                btn.innerText = "AKTYWNY";
+                btn.disabled = true;
+                syncPlayerStats();
+            } else if (stars < 50 && !isAdmin) {
+                alert("Za mało gwiazdek Telegramu! ⭐");
+            }
+        }
+
+        function checkShopButtons() {
+            if (isAdmin) return;
+            document.getElementById('buy-thief').disabled = money < thiefCost;
+            document.getElementById('buy-drill').disabled = money < drillCost;
+            if(skillLevel < 5) document.getElementById('buy-skill').disabled = money < skillCost;
+        }
+
+        function startHack() {
+            if (energy <= 0 && !isAdmin) {
+                document.getElementById('result-msg').style.color = '#f87171';
+                document.getElementById('result-msg').innerText = "Brak energii! Odnów w sklepie VIP ⭐";
+                return;
+            }
+            
+            if (!isAdmin) {
+                energy--;
+                document.getElementById('energy').innerText = energy;
+            }
+            
+            document.getElementById('hack-btn').style.display = 'none';
+            document.getElementById('minigame-box').style.display = 'block';
+            document.getElementById('result-msg').innerText = "";
+            
+            pointerPos = 0;
+            direction = 2.2;
+            isPlaying = true;
+
+            gameInterval = setInterval(() => {
+                pointerPos += direction;
+                if (pointerPos >= 97 || pointerPos <= 0) {
+                    direction *= -1;
+                }
+                document.getElementById('pointer').style.left = pointerPos + '%';
+            }, 15);
+        }
+
+        function stopHack() {
+            if (!isPlaying) return;
+            clearInterval(gameInterval);
+            isPlaying = false;
+
+            let leftBound = 50 - (zoneWidth / 2);
+            let rightBound = 50 + (zoneWidth / 2);
+
+            if (isAdmin || (pointerPos >= leftBound && pointerPos <= rightBound)) {
+                let baseLoot = Math.floor(Math.random() * 500) + 400;
+                let loot = Math.floor(baseLoot * thiefLevel * vipMultiplier);
+                
+                money += loot;
+                energy = Math.min(maxEnergy, energy + 2);
+                
+                document.getElementById('result-msg').style.color = '#4ade80';
+                document.getElementById('result-msg').innerText = `🔥 Sukces! +${loot}$ (VIP x${vipMultiplier})`;
+            } else {
+                document.getElementById('result-msg').style.color = '#f87171';
+                document.getElementById('result-msg').innerText = "❌ Alarm! Zamek zatrzaśnięty.";
+            }
+
+            document.getElementById('money').innerText = Math.floor(money);
+            document.getElementById('energy').innerText = energy;
+            syncPlayerStats();
+            
+            setTimeout(() => {
+                document.getElementById('minigame-box').style.display = 'none';
+                document.getElementById('hack-btn').style.display = 'block';
+                document.getElementById('result-msg').innerText = "";
+            }, 2200);
+        }
+    </script>
+</body>
+</html>
